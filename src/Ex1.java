@@ -1,0 +1,11 @@
+
+public class Ex1 {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+Parsing input= new Parsing("input.txt");
+Network net= input.getNetwork();
+System.out.println("end");
+	}
+
+}
