@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
@@ -21,22 +22,30 @@ public CPT (String owner, Vector<String> newEntries) {
 	for(String entry: newEntries) {
 		String[] values=entry.substring(entry.indexOf(owner)+owner.length()+1).split(owner+"=");
 		String key=entry.substring(0, entry.indexOf(owner));
+		if(key.isEmpty())key="none";
 		table.put(key, new HashMap<String,Double>());
 		for(String value: values) {
 			String[] prob = value.split(",");
 			table.get(key).put(prob[0], Double.parseDouble(prob[1]) );
 		}
-	}
-
-	
 		
+	}		
 }
-/**
- * 
- * @param evidence
- * @return new CPT table represent the factor of this variable when evidence are given.
- */
-	public CPT getFactorByEvidence(List<String> evidence) {
-		return null;
-	}
+public double getProb(Vector<String> Parent_evidence ,String wanted_value ) {
+	Collection<String> given = this.table.keySet();
+	for (String record : given) {
+		boolean b = true;
+		for (String e : Parent_evidence) {
+			if (!e.isEmpty()&&!record.contains(e))
+				b = false;
+		}
+		if(b==true) {
+			return this.table.get(record).get(wanted_value);
+		}
+
+	}  
+	return -1; //error
+
+}
+
 }
