@@ -23,9 +23,9 @@ Network net= input.getNetwork();
 
 
 StringBuilder result = new StringBuilder();
-Vector<Query> queries = input.getQueries();
-for(Query q: queries) {
-	result.append(Algo.run(q,net));
+List<Query> queries = input.getQueries();
+for(int i=0; i<queries.size(); i++) {
+	result.append(Algo.run(queries.get(i),net));
 }
 save(result.toString());
 

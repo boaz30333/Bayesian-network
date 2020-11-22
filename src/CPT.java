@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -31,21 +32,6 @@ public CPT (String owner, Vector<String> newEntries) {
 		
 	}		
 }
-public double getProb(Vector<String> Parent_evidence ,String wanted_value ) {
-	Collection<String> given = this.table.keySet();
-	for (String record : given) {
-		boolean b = true;
-		for (String e : Parent_evidence) {
-			if (!e.isEmpty()&&!record.contains(e))
-				b = false;
-		}
-		if(b==true) {
-			return this.table.get(record).get(wanted_value);
-		}
 
-	}  
-	return -1; //error
-
-}
 
 }

@@ -1,11 +1,13 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
 
 public class Parsing {
 	Network net = new Network();
-	Vector<Query> q;
+	List<Query> q;
 
 	public Parsing(String string) {
 		BufferedReader br = null;
@@ -24,7 +26,7 @@ public class Parsing {
 					break;
 				String_network.append(s + "\r");
 			}
-			s = br.readLine();
+//			s = br.readLine();
 			while (br.ready()) {
 				s = br.readLine();
 				String_queries.append(s + "\r");
@@ -40,10 +42,20 @@ public class Parsing {
 	public void parse_String_queries(String string) {
 		// TODO Auto-generated method stub
 		String[] queries = string.split("\r");
-		Vector<Query> q = new Vector<Query>();
+		List<Query> q = new LinkedList<Query>();
 		for (String Query : queries) {
-			String wanted = Query.substring(2, Query.indexOf('|'));
-			String[] evidence = Query.substring(Query.indexOf('|') + 1, Query.length() - 3).split(",");
+			String wanted;
+			String[] evidence = null;
+			if(Query.contains("|")) {
+			 wanted = Query.substring(2, Query.indexOf('|'));
+			 evidence = Query.substring(Query.indexOf('|') + 1, Query.length()
+					- 3).split(",");
+			}
+			else {
+				 wanted = Query.substring(2, Query.lastIndexOf(')'));
+				 String[] none_evidence = new String[] {"none"};
+				 evidence= none_evidence; 
+			}
 			int algo = Integer.parseInt("" + Query.charAt(Query.length() - 1));
 			q.add(new Query(wanted, evidence, algo));
 		}
@@ -67,15 +79,15 @@ public class Parsing {
 				String[] bb = aa[0].split(",");
 				String newEntry = "";
 				for (int i = 0; i < bb.length && !bb[i].isEmpty(); i++) {
-					newEntry += parents[i] + "=" + bb[i];
+					newEntry += parents[i] + "=|" + bb[i]+"|";
 					newEntry += ",";
 				}
 				double sum_prob = 0;
 				for (int i = 1; i < aa.length; i++) {
 					sum_prob += Double.parseDouble(aa[i].split(",")[1]);
-					newEntry += VarName + "=" + aa[i];
+					newEntry += VarName + "=|" + aa[i].substring(0, aa[i].indexOf(','))+ "|"+aa[i].substring(aa[i].indexOf(','));
 				}
-				newEntry += "," + VarName + "=" + values[values.length - 1] + "," + (double) (1 - sum_prob);
+				newEntry += "," + VarName + "=|" + values[values.length - 1] + "|," + (double) (1 - sum_prob);
 
 				newEntries.add(newEntry);
 			}
@@ -90,7 +102,7 @@ public class Parsing {
 		return this.net;
 	}
 
-	public Vector<Query> getQueries() {
+	public List<Query> getQueries() {
 		return this.q;
 	}
 

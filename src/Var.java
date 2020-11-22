@@ -1,6 +1,9 @@
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -12,7 +15,7 @@ import java.util.Vector;
 public class Var {
 
 	String name;
-	LinkedList<String> parents = new LinkedList<>();
+	Set<String> parents= new HashSet<String>();
 	LinkedList<String> values = new LinkedList<>();
 	CPT cpt;
 
@@ -58,5 +61,31 @@ public class Var {
 		return result;
 
 	}
+	public double getProb(List<String> combination ,String wanted_value ) {
 
+		Collection<String> given = this.cpt.table.keySet(); // all "bhinten" records
+		List<String> record2 = new LinkedList<>();
+		int num_of_parent= parents.size();
+		for (String record : given) { // for every line in the table
+			boolean b = true;
+			for (String e : combination) {
+				if(e.equals("none")) return this.cpt.table.get(record).get("|"+wanted_value+"|");
+				if(!this.parents.contains(e.substring(0, e.indexOf("=")))) continue;
+//				if(parents.contains(e.substring(0, e.indexOf("="))))
+//					record2.add(e);
+//				
+//				else
+				
+				String be =e.substring(0, e.indexOf("="))+"=|"+e.substring(e.indexOf("=")+1)+"|";
+				if (!e.isEmpty()&&!record.equals("none")&&!record.contains(be))
+					b = false;
+			}
+			if(b==true) {
+				return this.cpt.table.get(record).get("|"+wanted_value+"|");
+			}
+
+		}  
+		return -1; //error
+
+	}
 }
