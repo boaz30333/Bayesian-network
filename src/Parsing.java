@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -46,15 +47,19 @@ public class Parsing {
 		for (String Query : queries) {
 			String wanted;
 			String[] evidence = null;
-			if(Query.contains("|")) {
-			 wanted = Query.substring(2, Query.indexOf('|'));
-			 evidence = Query.substring(Query.indexOf('|') + 1, Query.length()
-					- 3).split(",");
-			}
-			else {
-				 wanted = Query.substring(2, Query.lastIndexOf(')'));
-				 String[] none_evidence = new String[] {"none"};
-				 evidence= none_evidence; 
+			if (Query.contains("|")) {
+				wanted = Query.substring(2, Query.indexOf('=') + 1) + "|"
+						+ Query.substring(Query.indexOf('=') + 1, Query.lastIndexOf('|')) + "|";
+				evidence = Query.substring(Query.indexOf('|') + 1, Query.length() - 3).split(",");
+				for (int i = 0; i < evidence.length; i++) {
+					evidence[i] = evidence[i].substring(0, evidence[i].indexOf("=") + 1) + "|"
+							+ evidence[i].substring(evidence[i].indexOf("=") + 1) + "|";
+				}
+			} else {
+				wanted = Query.substring(2, Query.indexOf('=') + 1) + "|"
+						+ Query.substring(Query.indexOf('=') + 1, Query.lastIndexOf(')')) + "|";
+				String[] none_evidence = new String[] { "none" };
+				evidence = none_evidence;
 			}
 			int algo = Integer.parseInt("" + Query.charAt(Query.length() - 1));
 			q.add(new Query(wanted, evidence, algo));
@@ -69,6 +74,10 @@ public class Parsing {
 			String[] setting = SplitBYCpt[0].split("\r");
 			String VarName = setting[0];
 			String[] values = setting[1].substring(8).split(",");
+			for (int i = 0; i < values.length; i++) {
+				values[i] = values[i].substring(0, values[i].indexOf("=") + 1) + "|"
+						+ values[i].substring(values[i].indexOf("=") + 1) + "|";
+			}
 			String[] parents = setting[2].substring(9).split(",");
 			String[] entriesArr = SplitBYCpt[1].split("\r");
 			Vector<String> newEntries = new Vector<>();
@@ -79,20 +88,23 @@ public class Parsing {
 				String[] bb = aa[0].split(",");
 				String newEntry = "";
 				for (int i = 0; i < bb.length && !bb[i].isEmpty(); i++) {
-					newEntry += parents[i] + "=|" + bb[i]+"|";
+					newEntry += parents[i] + "=|" + bb[i] + "|";
 					newEntry += ",";
 				}
 				double sum_prob = 0;
 				for (int i = 1; i < aa.length; i++) {
 					sum_prob += Double.parseDouble(aa[i].split(",")[1]);
-					newEntry += VarName + "=|" + aa[i].substring(0, aa[i].indexOf(','))+ "|"+aa[i].substring(aa[i].indexOf(','));
+					newEntry += VarName + "=|" + aa[i].substring(0, aa[i].indexOf(',')) + "|"
+							+ aa[i].substring(aa[i].indexOf(','));
 				}
-				newEntry += "," + VarName + "=|" + values[values.length - 1] + "|," + (double) (1 - sum_prob);
+				DecimalFormat df = new DecimalFormat("###.####"); // TODO maybe not needed to format here
+				newEntry += "," + VarName + "=" + values[values.length - 1] + ","
+						+ (double) (1 - Double.parseDouble(df.format(sum_prob)));
 
 				newEntries.add(newEntry);
 			}
 			CPT table = new CPT(VarName, newEntries);
-			Var variable = new Var(VarName, values, parents, table);
+			Var variable = new Var(VarName, values, parents, table, this.net);
 			this.net.put(variable);
 		}
 	}
