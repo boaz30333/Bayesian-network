@@ -2,7 +2,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -35,12 +37,62 @@ public class Algo {
 
 	private static String variable_elimitaion(Query q, Network net) {
 		// TODO Auto-generated method stub
-
-		Set<Factor> factors = new HashSet<>();
+		LinkedList<String> order = new LinkedList<String>(q.hidden_vars);
+		Collections.sort(order); // order var name for elimination
+		List<Factor> factors = new LinkedList<Factor>();
 		for (Var variable : net.vars.values()) {
-			factors.add(variable.getFactorByEvidence(q.evidence));
+			Factor factor_to_add = Factor.getFactorByEvidence(variable,q.evidence); 
+			if( !factor_to_add.table.isEmpty())
+			factors.add(factor_to_add);
 		}
-
+		List<Factor> factors_with_var_to_eliminate =  new LinkedList<Factor>(); // collect all factor include the var to eliminate
+		for  (String var_in_order : order) {
+			Iterator<Factor> iter_f = factors.iterator();
+			while(iter_f.hasNext()) {
+				Factor next= iter_f.next();
+				if(next.vars.contains(var_in_order)) {               // adding all the factors to eliminate to a list , remove from factor list and after elimination put back the new factor
+					factors_with_var_to_eliminate.add(next);
+					iter_f.remove();
+				}
+			
+			}
+			//----------------------------------------------------------------
+			List<List<Factor>> permutations = new LinkedList<List<Factor>>(); // to calculate all order option to multiply factors
+			for(int i=0;i<factors_with_var_to_eliminate.size();i++) { //
+				permutations.add(factors_with_var_to_eliminate);
+			}                                                            // check all Cartesian product this group with itself  and remove the list without all variables
+			permutations = product(permutations);
+			Iterator<List<Factor>> iter_p = permutations.iterator();
+			boolean exist=true;
+			while(iter_p.hasNext()) {
+				exist=true;
+				Set<Factor> factor_set= new HashSet<Factor>();
+				Collection<Factor> factors_to_add=	iter_p.next();
+				factor_set.addAll(factors_to_add );
+				for(Factor f : factors_with_var_to_eliminate) {
+					if(!factor_set.contains(f)) {
+						exist=false;
+					}
+				}
+				if(exist==false) iter_p.remove();
+			}
+			//-----------------------------------------------------------------------------------
+			
+			// add  your code here
+			String s="";
+			
+			
+			
+			
+			
+			
+			//-------------------------------------------------------------------
+			
+			
+			
+		}
+		
+//		List<Factor> =
 		return null;
 	}
 
@@ -64,24 +116,7 @@ public class Algo {
 			System.out.println(df.format(result) + "," + 0 + "," + 0);
 			return df.format(result) + "," + 0 + "," + 0;
 		}
-		Collection<String> network_vars_names = net.vars.keySet(); // names of all vars
-		List<String> hidden_vars_names = new LinkedList<String>();
-		for (String var_name : network_vars_names) { // FOR loop to find the hidden variable on the query
-			boolean b = true;
-			if (q.wanted.contains(var_name + "=")) {
-				wanted_var = var_name;
-				b = false;
-				continue;
-			}
-			for (String e : q.evidence) {
-				if (e.contains(var_name + "=")) {
-					b = false;
-					continue;
-				}
-			}
-			if (b == true)
-				hidden_vars_names.add(var_name);
-		}
+		List<String> hidden_vars_names =q.hidden_vars;
 		List<List<String>> all_combination = new LinkedList<List<String>>();
 		for (String var_name : hidden_vars_names) {
 			Collection<String> var_values = net.vars.get(var_name).values;
@@ -142,16 +177,16 @@ public class Algo {
 		return null;
 	}
 
-	private static List<List<String>> product(List<List<String>> lists) {
+	private static <T> List<List<T>> product(List<List<T>> lists) {
 
-		List<List<String>> result = new ArrayList<List<String>>();
-		result.add(new ArrayList<String>());
+		List<List<T>> result = new ArrayList<List<T>>();
+		result.add(new ArrayList<T>());
 
-		for (List<String> e : lists) {
-			List<List<String>> tmp1 = new ArrayList<List<String>>();
-			for (List<String> x : result) {
-				for (String y : e) {
-					List<String> tmp2 = new ArrayList<String>(x);
+		for (List<T> e : lists) {
+			List<List<T>> tmp1 = new ArrayList<List<T>>();
+			for (List<T> x : result) {
+				for (T y : e) {
+					List<T> tmp2 = new ArrayList<T>(x);
 					tmp2.add(y);
 					tmp1.add(tmp2);
 				}

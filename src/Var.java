@@ -36,54 +36,7 @@ public class Var {
 	 * @return new CPT table represent the factor of this variable when evidence are
 	 *         given.
 	 */
-	public Factor getFactorByEvidence(String[] evidence) {
-//		String factor_name="|";                               // TODO factor name has to be variable name include owner and the variable show in the table split by ',' without given variable 
 
-		// ___try_do_hashmap_____________________________________
-
-		HashMap<String, Double> factor_table = new HashMap<String, Double>();
-
-		// _________________________________________________
-		Set<String> vars_take_part = new HashSet<String>(this.parents);
-		vars_take_part.add(this.name);
-		Collection<String> given = this.cpt.table.keySet();
-		Vector<String> entries = new Vector<String>();
-		;
-		for (String record : given) {
-			boolean b = true;
-			String var_name = "";
-			for (String e : evidence) {
-				if (vars_take_part.contains(e.substring(0, e.indexOf('='))))
-					var_name = e.substring(0, e.indexOf('='));
-				if (vars_take_part.contains(var_name))
-					vars_take_part.remove("var_name");
-//				if(!this.parents.contains(var_name))
-//					vars_take_part.add(var_name);
-				if (!e.isEmpty() && !record.contains(e))
-					b = false;
-			}
-			if (b == true) {
-				String values = "";
-				if (!record.equals("none"))
-					values += record;
-
-//				if(record.equals("none")) {
-//					
-//				}
-
-				for (String key : this.cpt.table.get(record).keySet()) {
-					String keyH = record + "," + this.cpt.owner + "=" + key;
-					double valH = this.cpt.table.get(record).get(key);
-					factor_table.put(keyH, valH);
-					values += this.cpt.owner + "=" + key + "," + this.cpt.table.get(record).get(key) + ",";
-				}
-				values = values.substring(0, +values.lastIndexOf(','));
-				entries.add(values);
-			}
-		}
-
-		return new Factor(vars_take_part.size(), vars_take_part, new CPT(this.cpt.owner, entries));
-	}
 
 	public String toString() {
 		String result = "name:" + this.name + "\r Values:" + Arrays.toString(this.values.toArray()) + "\r Parent:"

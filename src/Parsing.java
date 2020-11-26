@@ -16,7 +16,7 @@ public class Parsing {
 		StringBuilder String_queries = new StringBuilder();
 
 		try {
-			br = new BufferedReader(new FileReader("input2.txt"));
+			br = new BufferedReader(new FileReader("input.txt"));
 			br.readLine();// Network
 			br.readLine();// Vars names - not necessary
 			br.readLine(); // /r
@@ -62,7 +62,7 @@ public class Parsing {
 				evidence = none_evidence;
 			}
 			int algo = Integer.parseInt("" + Query.charAt(Query.length() - 1));
-			q.add(new Query(wanted, evidence, algo));
+			q.add(new Query(wanted, evidence, algo,net));
 		}
 		this.q = q;
 	}
