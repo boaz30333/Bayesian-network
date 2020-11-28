@@ -16,7 +16,7 @@ public class Parsing {
 		StringBuilder String_queries = new StringBuilder();
 
 		try {
-			br = new BufferedReader(new FileReader("input.txt"));
+			br = new BufferedReader(new FileReader("input2.txt"));
 			br.readLine();// Network
 			br.readLine();// Vars names - not necessary
 			br.readLine(); // /r
@@ -97,9 +97,9 @@ public class Parsing {
 					newEntry += VarName + "=|" + aa[i].substring(0, aa[i].indexOf(',')) + "|"
 							+ aa[i].substring(aa[i].indexOf(','));
 				}
-				DecimalFormat df = new DecimalFormat("###.####"); // TODO maybe not needed to format here
+				DecimalFormat df = new DecimalFormat("###.#####"); // TODO maybe not needed to format here
 				newEntry += "," + VarName + "=" + values[values.length - 1] + ","
-						+ (double) (1 - Double.parseDouble(df.format(sum_prob)));
+						+  Double.parseDouble(df.format((1 - sum_prob)));
 
 				newEntries.add(newEntry);
 			}
