@@ -10,13 +10,13 @@ public class Parsing {
 	Network net = new Network();
 	List<Query> q;
 
-	public Parsing(String string) {
+	public Parsing(String input_path) {
 		BufferedReader br = null;
 		StringBuilder String_network = new StringBuilder();
 		StringBuilder String_queries = new StringBuilder();
 
 		try {
-			br = new BufferedReader(new FileReader("input2.txt"));
+			br = new BufferedReader(new FileReader(input_path));
 			br.readLine();// Network
 			br.readLine();// Vars names - not necessary
 			br.readLine(); // /r

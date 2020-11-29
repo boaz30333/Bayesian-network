@@ -25,9 +25,9 @@ public class Ex1 {
 		List<Query> queries = input.getQueries();
 		for (int i = 0; i < queries.size(); i++) {
 			result.append(Algo.run(queries.get(i), net));
+			if(i!=queries.size()-1) result.append(System.getProperty("line.separator"));
 		}
 		save(result.toString());
-
 		System.out.println("end");
 	}
 

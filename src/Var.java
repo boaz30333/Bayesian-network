@@ -45,16 +45,21 @@ public class Var {
 
 	}
 
-	public double getProb(List<String> combination, String wanted_value) {
-
+	public double getProb(List<String> evidences, String wanted_value) {
+		if (parents.contains("none")) {
+			if (evidences.isEmpty())return this.cpt.table.get("none").get(wanted_value);
+		else return -1;
+		}	
+		if(evidences.size()!=this.parents.size() ) { //&& (   (!this.parents.contains("none")&&evidences.contains("none"))|| (this.parents.contains("none")&&!evidences.contains("none")) )
+			System.out.println("getProb : evidences.size()!=this.parents.size()");
+			return -1;
+		}
 		Collection<String> given = this.cpt.table.keySet(); // all "bhinten" records
 		for (String record : given) { // for every line in the table
 			boolean b = true;
-			for (String e : combination) {
-				if (e.equals("none"))
-					return this.cpt.table.get(record).get(wanted_value);
-				if (!this.parents.contains(e.substring(0, e.indexOf("="))))
-					continue;
+			for (String e : evidences) {
+//				if (!this.parents.contains(e.substring(0, e.indexOf("="))))
+//					continue;
 
 				String be = e.substring(0, e.indexOf("=")) + "=" + e.substring(e.indexOf("=") + 1);
 				if (!e.isEmpty() && !record.equals("none") && !record.contains(be))
