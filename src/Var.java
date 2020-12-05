@@ -10,7 +10,7 @@ import java.util.Vector;
 /**
  * This class represents a variable in the Bayesian network
  * 
- * @author User
+ * @author Boaz Sharabi
  *
  */
 public class Var {
@@ -31,44 +31,45 @@ public class Var {
 	}
 
 	/**
+	 * return The probability of wanted event given his parents
 	 * 
-	 * @param evidence
-	 * @return new CPT table represent the factor of this variable when evidence are
-	 *         given.
+	 * @param evidences
+	 * @param wanted_value
+	 * @return
 	 */
-
-
-	public String toString() {
-		String result = "name:" + this.name + "\r Values:" + Arrays.toString(this.values.toArray()) + "\r Parent:"
-				+ Arrays.toString(this.parents.toArray());
-		return result;
-
-	}
-
 	public double getProb(List<String> evidences, String wanted_value) {
-		if (parents.contains("none")) {
-			if (evidences.isEmpty())return this.cpt.table.get("none").get(wanted_value);
-		else return -1;
-		}	
-		if(evidences.size()!=this.parents.size() ) { //&& (   (!this.parents.contains("none")&&evidences.contains("none"))|| (this.parents.contains("none")&&!evidences.contains("none")) )
+		// no evidence and no parent - there is answer | parents number different from
+		// evidence number - no answer
+		if (parents.contains("none") || (!parents.contains("none")) && parents.size() != evidences.size()) {
+			if (evidences.isEmpty())
+				return this.cpt.table.get("none").get(wanted_value);
+			else
+				return -1;
+		}
+		Set<String> parents = new HashSet<String>(this.parents);
+		for (String e : evidences) {
+			String evidence_var = e.substring(0, e.indexOf("="));
+			if (parents.contains(evidence_var)) {
+				parents.remove(evidence_var);
+			}
+		}
+		if (!parents.isEmpty()) { // no enough evidence match parent - no solution
 			System.out.println("getProb : evidences.size()!=this.parents.size()");
 			return -1;
 		}
+
 		Collection<String> given = this.cpt.table.keySet(); // all "bhinten" records
 		for (String record : given) { // for every line in the table
 			boolean b = true;
-			for (String e : evidences) {
-//				if (!this.parents.contains(e.substring(0, e.indexOf("="))))
-//					continue;
-
-				String be = e.substring(0, e.indexOf("=")) + "=" + e.substring(e.indexOf("=") + 1);
-				if (!e.isEmpty() && !record.equals("none") && !record.contains(be))
+			for (String evidence : evidences) {
+				String evidence_var = evidence.substring(0, evidence.indexOf("="));
+				if (!evidence.isEmpty() && !record.equals("none") && !record.contains(evidence)
+						&& record.contains(evidence_var))
 					b = false;
 			}
 			if (b == true) {
 				return this.cpt.table.get(record).get(wanted_value);
 			}
-
 		}
 		return -1; // error
 

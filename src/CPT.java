@@ -1,15 +1,12 @@
-import java.util.ArrayList;
-import java.util.Collection;
+
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 
 /**
  * CPT class represent conditional probability table (CPT) each Var in the
  * Baysian network has CPT
  * 
- * @author User
+ * @author Boaz Sharabi
  */
 public class CPT {
 	public String owner;

@@ -1,11 +1,14 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
-
+/**
+ * 
+ * @author Boaz Sharabi
+ *
+ */
 public class Parsing {
 	Network net = new Network();
 	List<Query> q;
@@ -27,7 +30,6 @@ public class Parsing {
 					break;
 				String_network.append(s + "\r");
 			}
-//			s = br.readLine();
 			while (br.ready()) {
 				s = br.readLine();
 				String_queries.append(s + "\r");
@@ -39,9 +41,11 @@ public class Parsing {
 		parse_String_network(String_network.toString());
 		parse_String_queries(String_queries.toString());
 	}
-
+/**
+ * this method parse String input and create List of queries
+ * @param string
+ */
 	public void parse_String_queries(String string) {
-		// TODO Auto-generated method stub
 		String[] queries = string.split("\r");
 		List<Query> q = new LinkedList<Query>();
 		for (String Query : queries) {
@@ -66,7 +70,10 @@ public class Parsing {
 		}
 		this.q = q;
 	}
-
+/**
+ * this method parse String input and create Bayesian Network
+ * @param string
+ */
 	public void parse_String_network(String string) {
 		String[] Vars = string.substring(4).split("Var ");
 		for (String Var_setting : Vars) {
@@ -97,9 +104,8 @@ public class Parsing {
 					newEntry += VarName + "=|" + aa[i].substring(0, aa[i].indexOf(',')) + "|"
 							+ aa[i].substring(aa[i].indexOf(','));
 				}
-				DecimalFormat df = new DecimalFormat("###.#####"); // TODO maybe not needed to format here
 				newEntry += "," + VarName + "=" + values[values.length - 1] + ","
-						+  Double.parseDouble(df.format((1 - sum_prob)));
+						+  (1 - sum_prob);
 
 				newEntries.add(newEntry);
 			}
@@ -108,12 +114,17 @@ public class Parsing {
 			this.net.put(variable);
 		}
 	}
-
+/**
+ * 
+ * @return Bayesian network 
+ */
 	public Network getNetwork() {
-		// TODO Auto-generated method stub
 		return this.net;
 	}
-
+/**
+ * 
+ * @return list of queries
+ */
 	public List<Query> getQueries() {
 		return this.q;
 	}

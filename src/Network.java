@@ -4,7 +4,7 @@ import java.util.HashMap;
  * Network class represent Bayesian network more details :
  * https://en.wikipedia.org/wiki/Bayesian_network
  * 
- * @author User
+ * @author Boaz Sharabi
  *
  */
 public class Network {

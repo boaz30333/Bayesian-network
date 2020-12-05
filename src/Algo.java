@@ -1,21 +1,23 @@
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Stack;
-
+/**
+ * 
+ * @author Boaz Sharabi
+ * This class represent algorithms 
+ * standard algorithm - Bayes formula , variable elimination according ABC order 
+ * and variable elimination according heuristic ordering - heuristic= minimum weight
+ * more details: https://en.wikipedia.org/wiki/Variable_elimination
+ */
 public class Algo {
-	public static DecimalFormat df = new DecimalFormat("###.#####"); // TODO maybe not needed to format here
-
 	public static String run(Query q, Network net) {
 		switch (q.algo) {
 		case (1): {
@@ -34,14 +36,12 @@ public class Algo {
 
 	}
 
-	private static LinkedList<String> heuristic_order(LinkedList<String> order, Network net) {
+	private static LinkedList<String> heuristic_order(LinkedList<String> order, Network net, Query q) {
 		// TODO Auto-generated method stub
 
-		// -------------morlaize bn - neighbor= parent -son , son -parent , parent of
+		// ------------- moralize BN -> neighbor= parent -son , son -parent , parent of
 		// son -another parent of son
 		HashMap<String, HashSet<String>> moralized_BN = new HashMap<>();
-		HashMap<String, Integer> weight_values = new HashMap<>();
-
 		for (Var var : net.vars.values()) {
 			moralized_BN.put(var.name, new HashSet<>());
 		}
@@ -56,45 +56,43 @@ public class Algo {
 				moralized_BN.get(parent_a).remove(parent_a);
 			}
 		}
-
-		for (Var var : net.vars.values()) {
+		  Set<Var> vars_to_order = new HashSet<Var>(net.vars.values());
+		  LinkedList<String> Min_Weight_Order = new LinkedList<String>();
+		  while (!vars_to_order.isEmpty()) {
+				String min_weight_var="";
+				int min_weight= Integer.MAX_VALUE;
+		for (Var var : vars_to_order) {
 			Set<String> neighbors = moralized_BN.get(var.name);
+			
 			int product_value = 1;
+			if(neighbors.isEmpty()) product_value=0;
 			for (String neighbor : neighbors) {// neighbor{
-				product_value= product_value*net.vars.get(neighbor).values.size();
+				boolean is_evidence=false;
+				for(String evidence : q.evidence) {
+					if(evidence.contains(neighbor+"=")) is_evidence=true;
+				}
+//				if(is_evidence==false) { TODO maybe if we know that variable = some value this var contain only one value
+				product_value = product_value * net.vars.get(neighbor).values.size();
+//				}
 			}
-			weight_values.put(var.name, product_value);
+			if(product_value<min_weight) {
+			min_weight= product_value;
+			min_weight_var=var.name;
+			}
 		}
+		if(order.contains(min_weight_var))
+		Min_Weight_Order.addLast(min_weight_var);
+		vars_to_order.remove(net.vars.get(min_weight_var));
+		Set<String> neighbors = moralized_BN.get(min_weight_var);
+		for (String neighbor : neighbors) {// neighbor{
+			moralized_BN.get(neighbor).addAll(neighbors);
+		}
+		  }
 
-		// -------------compute product of values of all neighbors values
-//		PriorityQueue<String> byMinWight = new PriorityQueue<>(new Comparator<String>() {
-//
-//			@Override
-//			public int compare(String arg0, String arg1) {
-//				// TODO Auto-generated method stub
-//				if(weight_values.get(arg0)>weight_values.get(arg1)) return -1;
-//				else if (weight_values.get(arg0)<weight_values.get(arg1)) return 1;
-//				else
-//				return 0;
-//			}
-//		});
-
-Collections.sort(order,new Comparator<String>() {
-	
-	@Override
-	public int compare(String arg0, String arg1) {
-		// TODO Auto-generated method stub
-		if(weight_values.get(arg0)>weight_values.get(arg1)) return -1;
-		else if (weight_values.get(arg0)<weight_values.get(arg1)) return 1;
-		else
-		return 0;
-	}
-});
-return order;
+		return Min_Weight_Order;
 	}
 
 	private static String variable_elimination(Query q, Network net, String type) {
-		// TODO Auto-generated method stub
 //------------- check if the query can be inferred from entry in var cpt table
 
 		String wanted_var = q.wanted.substring(0, q.wanted.indexOf("="));
@@ -103,7 +101,6 @@ return order;
 		double inferred_from_wanted_var_cpt = net.vars.get(wanted_var).getProb(evidenceArrayList,
 				q.wanted.substring(q.wanted.indexOf("=") + 1));
 		if (inferred_from_wanted_var_cpt != -1) {
-			System.out.println(String.format("%.5f", inferred_from_wanted_var_cpt) + "," + 0 + "," + 0);
 			return String.format("%.5f", inferred_from_wanted_var_cpt) + "," + 0 + "," + 0;
 
 		}
@@ -129,14 +126,14 @@ return order;
 		if (type.equals("ABC_order"))
 			Collections.sort(order); // order var name for elimination
 		else if (type.equals("heuristic_order"))
-			order = heuristic_order(order, net);
+			order = heuristic_order(order, net,q);
 //------------- prepare factors from the variables
 		List<Factor> factors = new LinkedList<Factor>();
 		for (Var variable : net.vars.values()) {
 			if (!relevant_vars.contains(variable.name))
 				continue;
 			Factor factor_to_add = Factor.getFactorByEvidence(variable, q.evidence);
-			if (factor_to_add != null && !factor_to_add.table.isEmpty())
+			if (factor_to_add != null && !factor_to_add.table.isEmpty()&&factor_to_add.table.size()>1)
 				factors.add(factor_to_add);
 		}
 //-------------join and eliminate according the order
@@ -144,7 +141,7 @@ return order;
 			List<Factor> factors_with_var_to_eliminate = new LinkedList<Factor>(); // collect all factor include the var
 																					// to eliminate
 			Iterator<Factor> iter_f = factors.iterator();
-			while (iter_f.hasNext()) {
+			while (iter_f.hasNext())  {
 				Factor next = iter_f.next();
 				if (next.vars.contains(var_in_order)) { // adding all the factors to eliminate to a list , remove from
 														// factor list and after elimination put back the new factor
@@ -153,68 +150,86 @@ return order;
 				}
 
 			}
-//------------- check if we can eliminate now and continue to the next var in order
+//----------------------- check if we can eliminate now and continue to the next var in order
 
 			if (factors_with_var_to_eliminate.size() == 1) {
-				factors.add(factors_with_var_to_eliminate.get(0).eliminate(var_in_order, net));
-				count_of_sum += factors_with_var_to_eliminate.get(0).table.size()
-						* (net.vars.get(var_in_order).values.size() - 1);
+				double count_sum_eliminate = factors_with_var_to_eliminate.get(0).eliminate(var_in_order, net);
+				factors.add(factors_with_var_to_eliminate.get(0));
+				count_of_sum += count_sum_eliminate;// factors_with_var_to_eliminate.get(0).table.size()
+				// * (net.vars.get(var_in_order).values.size() - 1);
 				continue;
 
 			}
-
+				while(factors_with_var_to_eliminate.size()>1) {
 //------------- find all possible ordering to joins factor
 			List<List<Factor>> permutations = new LinkedList<List<Factor>>();
-
-			for (int i = 0; i < factors_with_var_to_eliminate.size(); i++) {
+			
+			for (int i = 0; i <2; i++) {
 				permutations.add(factors_with_var_to_eliminate);
 			} // check all Cartesian product this group with itself and remove the list
 				// without all variables
 			permutations = product(permutations);
 			Iterator<List<Factor>> iter_p = permutations.iterator();
-			boolean exist = true;
+			boolean not_same = true;
 			while (iter_p.hasNext()) {
-				exist = true;
+				not_same = true;
 				ArrayList<Factor> factor_arr = new ArrayList<>();
 				Collection<Factor> factors_to_add = iter_p.next();
 				factor_arr.addAll(factors_to_add);
-				if (factor_arr.get(0).toString().compareTo(factor_arr.get(1).toString()) < 0) { // the ordering between
-																								// the first and the
-																								// second element
-																								// does'nt meter , in
-																								// this way we chose
-																								// only one
+				// the ordering between the first and the second element does'nt meter , in this
+				// way we chose only one
+				if (factor_arr.get(0).toString().compareTo(factor_arr.get(1).toString()) <= 0) {
 					iter_p.remove();
 					continue;
 				}
-				for (Factor f : factors_with_var_to_eliminate) {
-					if (!factor_arr.contains(f)) {
-						exist = false;
-					}
-				}
-				if (exist == false)
-					iter_p.remove();
+
 			}
-//-------------join factors with var to eliminate and check minimum multiplication according to different order of joins
-			int min_multiply = Integer.MAX_VALUE;
+////-------------join factors with var to eliminate and check minimum multiplication according to different order of joins
+			int min_add_row = Integer.MAX_VALUE;
+			int min_ascii_value = Integer.MAX_VALUE;
 			Factor after_join = null;
+			List<Factor> min_permutation = null;
 			for (int j = 0; j < permutations.size(); j++) {
+				int ascii_value = 0;
 				List<Factor> permutation = permutations.get(j);
 				int count = 0;
-				Factor f = permutation.get(0);
+				Set<String> take_part = new HashSet<String>(permutation.get(0).vars);
 				for (int i = 1; i < permutation.size(); i++) {
-					f = f.join(permutation.get(i));
-					count += f.table.size();
+//		1			f = f.join(permutation.get(i));
+//		1			count += f.table.size();
+					Set<String> union = new HashSet<String>(take_part);
+					union.addAll(permutation.get(i).vars);
+					count += union.size() - Math.max(permutation.get(i).vars.size(), take_part.size());
+					take_part = union;
 				}
-				if (count < min_multiply)
-					min_multiply = count;
-				if (j == 0)
-					after_join = f;
+				for (String s : take_part) {
+					ascii_value += s.chars().reduce(0, Integer::sum);
+				}
+				if (count < min_add_row || (count == min_add_row && ascii_value < min_ascii_value)) {
+					min_ascii_value = ascii_value;
+					min_add_row = count;
+					min_permutation = permutations.get(j);
+				}
+//				if (j == 0)
+//					after_join = f;
 			}
+
+			Factor f = min_permutation.get(0);
+			factors_with_var_to_eliminate.remove(f);
+			for (int i = 1; i < min_permutation.size(); i++) {
+				factors_with_var_to_eliminate.remove(min_permutation.get(i));
+				f = f.join(min_permutation.get(i));
+				factors_with_var_to_eliminate.add(f);
+				count_of_multiplication += f.table.size();
+				
+			}}
 //-------------elimination variable in order
-			factors.add(after_join.eliminate(var_in_order, net));
-			count_of_sum += after_join.table.size() * (net.vars.get(var_in_order).values.size() - 1);
-			count_of_multiplication += min_multiply;
+				Factor factor= factors_with_var_to_eliminate.get(0);
+		
+			double count_eliminate_sum = factor.eliminate(var_in_order, net);
+			factors.add(factor);
+			count_of_sum += count_eliminate_sum;
+
 
 		}
 
@@ -228,9 +243,10 @@ return order;
 //-------------normalization
 		remaining_factor.normalize();
 		count_of_sum += remaining_factor.table.size() - 1; // we sum all entries for normalization , And divide the
-															// current value of the entry by the total sum
-		double wanted_prob = remaining_factor.table.get(q.wanted);
-		System.out.println(String.format("%.5f", wanted_prob) + "," + count_of_sum + "," + count_of_multiplication);
+		double wanted_prob=0;
+		if(remaining_factor.table.containsKey(q.wanted))
+		// current value of the entry by the total sum
+		wanted_prob = remaining_factor.table.get(q.wanted);
 		return String.format("%.5f", wanted_prob) + "," + count_of_sum + "," + count_of_multiplication;
 	}
 
@@ -241,7 +257,6 @@ return order;
 		double inferred_from_wanted_var_cpt = net.vars.get(wanted_var).getProb(evidenceArrayList,
 				q.wanted.substring(q.wanted.indexOf("=") + 1));
 		if (inferred_from_wanted_var_cpt != -1) {
-			System.out.println(String.format("%.5f", inferred_from_wanted_var_cpt) + "," + 0 + "," + 0);
 			return String.format("%.5f", inferred_from_wanted_var_cpt) + "," + 0 + "," + 0;
 
 		}
@@ -273,7 +288,7 @@ return order;
 				for (String var_to_comute : combination) {
 					List<String> parents_value = new LinkedList<>();
 					for (String var : combination) {
-						if (net.vars.get(var_to_comute.substring(0, var_to_comute.indexOf("="))).parents
+						if (net.vars.get(var_to_comute.substring(0, var_to_comute.indexOf("="))).parents //find the parents of var_to_compute
 								.contains(var.substring(0, var.indexOf("="))))
 							parents_value.add(var);
 					}
@@ -316,7 +331,12 @@ return order;
 													// values
 		return all_combination;
 	}
-
+/**
+ * credit : oscar lopez : https://stackoverflow.com/questions/9591561/java-cartesian-product-of-a-list-of-lists/9594404#9594404 
+ * @param <T>
+ * @param lists
+ * @return
+ */
 	public static <T> List<List<T>> product(List<List<T>> lists) {
 
 		List<List<T>> result = new ArrayList<List<T>>();
