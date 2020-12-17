@@ -170,9 +170,7 @@ public class Algo {
 				// without all variables
 			permutations = product(permutations);
 			Iterator<List<Factor>> iter_p = permutations.iterator();
-			boolean not_same = true;
 			while (iter_p.hasNext()) {
-				not_same = true;
 				ArrayList<Factor> factor_arr = new ArrayList<>();
 				Collection<Factor> factors_to_add = iter_p.next();
 				factor_arr.addAll(factors_to_add);
@@ -187,7 +185,6 @@ public class Algo {
 ////-------------join factors with var to eliminate and check minimum multiplication according to different order of joins
 			int min_add_row = Integer.MAX_VALUE;
 			int min_ascii_value = Integer.MAX_VALUE;
-			Factor after_join = null;
 			List<Factor> min_permutation = null;
 			for (int j = 0; j < permutations.size(); j++) {
 				int ascii_value = 0;
@@ -195,8 +192,6 @@ public class Algo {
 				int count = 0;
 				Set<String> take_part = new HashSet<String>(permutation.get(0).vars);
 				for (int i = 1; i < permutation.size(); i++) {
-//		1			f = f.join(permutation.get(i));
-//		1			count += f.table.size();
 					Set<String> union = new HashSet<String>(take_part);
 					union.addAll(permutation.get(i).vars);
 					count += union.size() - Math.max(permutation.get(i).vars.size(), take_part.size());

@@ -1,11 +1,9 @@
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 /**
  * This class represents a variable in the Bayesian network
@@ -53,7 +51,7 @@ public class Var {
 			}
 		}
 		if (!parents.isEmpty()) { // no enough evidence match parent - no solution
-			System.out.println("getProb : evidences.size()!=this.parents.size()");
+//			System.out.println("getProb : evidences.size()!=this.parents.size()");
 			return -1;
 		}
 
