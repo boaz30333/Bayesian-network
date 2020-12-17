@@ -11,10 +11,8 @@ public class Ex1 {
 
 	public static void main(String[] args) {
 
-		Parsing input = new Parsing("input3.txt");
+		Parsing input = new Parsing("input.txt");
 		Network net = input.getNetwork();
-
-
 		StringBuilder result = new StringBuilder();
 		List<Query> queries = input.getQueries();
 		for (int i = 0; i < queries.size(); i++) {

@@ -85,16 +85,16 @@ public class Factor {
 	public double eliminate(String var_to_eliminate, Network net) {
 		HashMap<String, Double> factor_table_after_eliminate = new HashMap<String, Double>();
 
-		if (!this.vars.contains(var_to_eliminate)) {
+		if (!this.vars.contains(var_to_eliminate)||(this.vars.size()==1&&this.vars.contains(var_to_eliminate))) {
 			return 0;
 		}
 		this.vars.remove(var_to_eliminate);
 		this.num--;
 		List<List<String>> all_combination = Algo.find_value_combination(this.vars, net);
-		int count = 0;
+		int count=0;
 		for (List<String> combination : all_combination) {
+			int count_combinaton = 0;
 			double prob = 0;
-			count--;
 			String new_record = "";
 			for (String var_value : combination) {
 				new_record += var_value + ",";
@@ -108,9 +108,12 @@ public class Factor {
 				}
 				if (match == true) {
 					prob += this.table.get(record);
-					count++;
+					count_combinaton++;
 				}
 			}
+			if(count_combinaton>0) count_combinaton--;
+			count+=count_combinaton;
+//			if(prob>0)
 			factor_table_after_eliminate.put(new_record, prob);
 		}
 		this.table = factor_table_after_eliminate;
@@ -170,8 +173,8 @@ public class Factor {
 					return null;
 				if (b == true) {
 					double valH = variable.cpt.table.get(record).get(key);
-					if (valH == 0)
-						continue;// scenario value =0 we need remove this entry from the table
+//					if (valH == 0)
+//						continue;// scenario value =0 we may want remove this entry from the table
 					factor_table.put(keyH, valH);
 				}
 			}

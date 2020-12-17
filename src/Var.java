@@ -38,14 +38,13 @@ public class Var {
 	 * @return
 	 */
 	public double getProb(List<String> evidences, String wanted_value) {
-		// no evidence and no parent - there is answer | parents number different from
-		// evidence number - no answer
-		if (parents.contains("none") || (!parents.contains("none")) && parents.size() != evidences.size()) {
-			if (evidences.isEmpty())
+		// no evidence and no parent - there is answer
+		if (parents.contains("none")&&evidences.isEmpty()) 
 				return this.cpt.table.get("none").get(wanted_value);
-			else
+		 // parents number different from  evidence number - no answer
+		if( parents.size() != evidences.size())
 				return -1;
-		}
+		
 		Set<String> parents = new HashSet<String>(this.parents);
 		for (String e : evidences) {
 			String evidence_var = e.substring(0, e.indexOf("="));

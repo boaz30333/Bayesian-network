@@ -37,7 +37,6 @@ public class Algo {
 	}
 
 	private static LinkedList<String> heuristic_order(LinkedList<String> order, Network net, Query q) {
-		// TODO Auto-generated method stub
 
 		// ------------- moralize BN -> neighbor= parent -son , son -parent , parent of
 		// son -another parent of son
@@ -71,9 +70,9 @@ public class Algo {
 				for(String evidence : q.evidence) {
 					if(evidence.contains(neighbor+"=")) is_evidence=true;
 				}
-//				if(is_evidence==false) { TODO maybe if we know that variable = some value this var contain only one value
+				if(is_evidence==false) { 
 				product_value = product_value * net.vars.get(neighbor).values.size();
-//				}
+				}
 			}
 			if(product_value<min_weight) {
 			min_weight= product_value;
@@ -123,8 +122,9 @@ public class Algo {
 			if (!relevant_vars.contains(var))
 				iter.remove();
 		}
+//--------------choose the elimination order toVE algorithm
 		if (type.equals("ABC_order"))
-			Collections.sort(order); // order var name for elimination
+			Collections.sort(order,String.CASE_INSENSITIVE_ORDER); // order var name for elimination
 		else if (type.equals("heuristic_order"))
 			order = heuristic_order(order, net,q);
 //------------- prepare factors from the variables
@@ -133,7 +133,7 @@ public class Algo {
 			if (!relevant_vars.contains(variable.name))
 				continue;
 			Factor factor_to_add = Factor.getFactorByEvidence(variable, q.evidence);
-			if (factor_to_add != null && !factor_to_add.table.isEmpty()&&factor_to_add.table.size()>1)
+			if (factor_to_add != null && !factor_to_add.table.isEmpty())
 				factors.add(factor_to_add);
 		}
 //-------------join and eliminate according the order
@@ -227,6 +227,7 @@ public class Algo {
 				Factor factor= factors_with_var_to_eliminate.get(0);
 		
 			double count_eliminate_sum = factor.eliminate(var_in_order, net);
+			if(count_eliminate_sum!=0) // there is  a factor after eliminate
 			factors.add(factor);
 			count_of_sum += count_eliminate_sum;
 
@@ -335,7 +336,7 @@ public class Algo {
  * credit : oscar lopez : https://stackoverflow.com/questions/9591561/java-cartesian-product-of-a-list-of-lists/9594404#9594404 
  * @param <T>
  * @param lists
- * @return
+ * @return list of list , every internal list is possible combination in the Cartesian product
  */
 	public static <T> List<List<T>> product(List<List<T>> lists) {
 
@@ -357,6 +358,14 @@ public class Algo {
 		return result;
 	}
 
+	
+
+/**
+ * 
+ * @param affect_vars
+ * @param net
+ * @return set of variable name that relevant to query based on affect_vars(query and evidence variable)
+ */
 	private static Set<String> all_relevant(Set<String> affect_vars, Network net) {
 		Set<String> relevant_vars = new HashSet<String>();
 		for (String affect_var : affect_vars) {
