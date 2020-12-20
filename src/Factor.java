@@ -85,8 +85,18 @@ public class Factor {
 	public double eliminate(String var_to_eliminate, Network net) {
 		HashMap<String, Double> factor_table_after_eliminate = new HashMap<String, Double>();
 
-		if (!this.vars.contains(var_to_eliminate)||(this.vars.size()==1&&this.vars.contains(var_to_eliminate))) {
+		if (!this.vars.contains(var_to_eliminate)) {
 			return 0;
+		}
+		if(this.vars.size()==1&&this.vars.contains(var_to_eliminate)) {
+			double prob=0;
+			this.vars.remove(var_to_eliminate);
+			for(String record : this.table.keySet()) {
+				prob+= this.table.get(record);
+			}
+			factor_table_after_eliminate.put("none", prob);
+			this.table= factor_table_after_eliminate;
+			return net.vars.get(var_to_eliminate).values.size()-1;
 		}
 		this.vars.remove(var_to_eliminate);
 		this.num--;

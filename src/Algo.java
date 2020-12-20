@@ -194,7 +194,7 @@ public class Algo {
 				for (int i = 1; i < permutation.size(); i++) {
 					Set<String> union = new HashSet<String>(take_part);
 					union.addAll(permutation.get(i).vars);
-					count += union.size() - Math.max(permutation.get(i).vars.size(), take_part.size());
+					count += union.size() ;
 					take_part = union;
 				}
 				for (String s : take_part) {
@@ -222,7 +222,7 @@ public class Algo {
 				Factor factor= factors_with_var_to_eliminate.get(0);
 		
 			double count_eliminate_sum = factor.eliminate(var_in_order, net);
-			if(count_eliminate_sum!=0) // there is  a factor after eliminate
+			if(factor.table.size()!=1) // there is  a factor after eliminate and this not irrelevant factor
 			factors.add(factor);
 			count_of_sum += count_eliminate_sum;
 
